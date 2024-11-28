@@ -2,9 +2,8 @@ package com.october.back.error.exception;
 
 import com.october.back.error.ErrorCode;
 
-public class ClientException extends ApiException {
-
-    public ClientException(ErrorCode errorCode) {
+public class ServerException extends ApiException {
+    public ServerException(ErrorCode errorCode) {
         super(errorCode);
     }
 }
