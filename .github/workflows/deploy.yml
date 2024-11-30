@@ -31,6 +31,12 @@ jobs:
       - name: 빌드된 파일 이름 변경하기
         run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
+      - name: Docker 이미지 생성
+        run: docker build -t photobooth .
+
+      - name: Docker 이미지에 Tag 붙이기
+        run: docker tag photobooth ${{ steps.login-ecr.outputs.registry }}/photobooth:latest
+
       - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -41,12 +47,6 @@ jobs:
       - name: ECR에 로그인하기
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Docker 이미지 생성
-        run: docker build -t photobooth .
-
-      - name: Docker 이미지에 Tag 붙이기
-        run: docker tag photobooth ${{ steps.login-ecr.outputs.registry }}/photobooth:latest
 
       - name: 압축하기
         run: tar -czvf $GITHUB_SHA.tar.gz project.jar appspec.yml scripts
