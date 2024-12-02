@@ -128,7 +128,7 @@ public class JwtTokenProvider {
 
         Long userId = this.getUserId(refreshToken);
 
-        Users userEntity = userRepo.findByUserId(userId)
+        Users userEntity = userRepo.findById(userId)
                 .orElseThrow(() -> new ClientException("force re-login", ErrorCode.NOT_FOUND_EXCEPTION));
 
         String userRole = extractUserRoleFromToken(refreshToken);

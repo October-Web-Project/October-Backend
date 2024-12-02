@@ -1,4 +1,4 @@
-package com.october.back.service.serviceImpl;
+package com.october.back.service.ServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
