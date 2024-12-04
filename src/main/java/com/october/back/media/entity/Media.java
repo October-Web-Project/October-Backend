@@ -3,6 +3,7 @@ package com.october.back.media.entity;
 import com.october.back.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,13 +12,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Media extends BaseEntity {
 
-	@Column(name = "clientUploadImageUrl", nullable = false)
-	private String clientUploadUrl;
+	@Column(name = "clientUploadFileName", nullable = false)
+	private String clientUploadFileName;
 
-	@Column(name = "serverStoreImageUrl", nullable = false, unique = true)
+	@Column(name = "serverStoreUrl", nullable = false, unique = true)
 	private String serverStoredUrl;
 
-	@Embedded
 	@Enumerated(EnumType.STRING)
 	private MediaType mediaType;
+
+	@Builder
+	private Media(String clientUploadFileName, String serverStoredUrl, MediaType mediaType) {
+		this.clientUploadFileName = clientUploadFileName;
+		this.serverStoredUrl = serverStoredUrl;
+		this.mediaType = mediaType;
+	}
 }
