@@ -82,32 +82,31 @@ public class JwtTokenProvider {
         Map<String, String> claimsBody = new HashMap<>();
         claimsBody.put("role", (String) claims.get("role"));
         claimsBody.put("nickName", (String) claims.get("nickName"));
+        claimsBody.put("email", (String) claims.get("email"));
         return claimsBody;
     }
-    public String createAccessToken(String userId, String userRole, String nickName) {
-            return this.createToken(userId, userRole, nickName, accessTokenValidTime);
+    public String createAccessToken(String userId, String userRole, String nickName, String email) {
+        return this.createToken(userId, userRole, nickName, email, accessTokenValidTime);
     }
-
     // Refresh Token 생성.
-    public String createRefreshToken(String userId, String userRole, String nickName) {
-            return this.createToken(userId, userRole, nickName, refreshTokenValidTime);
+    public String createRefreshToken(String userId, String userRole, String nickName, String email) {
+        return this.createToken(userId, userRole, nickName, email, refreshTokenValidTime);
     }
 
     // Create token
-    private String createToken(String userId, String userRole, String nickName, long tokenValid) {
-        Claims claims = Jwts.claims().setSubject(userId);
-        claims.put("role", userRole);
-        claims.put("nickName",nickName);
-
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Date date = new Date();
+    private String createToken(String userId, String userRole, String nickName, String email, long validTime) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + validTime);
 
         return Jwts.builder()
-                .setClaims(claims) // 발행 유저 정보 저장
-                .setIssuedAt(date) // 발행 시간 저장
-                .setExpiration(new Date(date.getTime() + tokenValid)) // 토큰 유효 시간 저장
-                .signWith(key, SignatureAlgorithm.HS256) // 해싱 알고리즘 및 키 설정
-                .compact(); // 생성
+                .setSubject(userId)
+                .claim("role", userRole)
+                .claim("nickName", nickName)
+                .claim("email", email)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
+                .compact();
     }
 
 
@@ -133,8 +132,9 @@ public class JwtTokenProvider {
 
         String userRole = extractUserRoleFromToken(refreshToken);
 
-        return this.createAccessToken(userEntity.getId().toString(), userRole, userEntity.getNickName());
+        return this.createAccessToken(userEntity.getId().toString(), userRole, userEntity.getNickName(), userEntity.getEmail());
     }
+
     //redis 사용 연계로 블랙리스트 구현
     //public void expireToken(){}
 
