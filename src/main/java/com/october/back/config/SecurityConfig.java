@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/") // 로그아웃 성공 시 "/"로 리다이렉트
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error/**", "/auth/**", "/home/**", "/review/**").permitAll() // 특정 경로 허용
+                        .requestMatchers("/error/**", "normal/users/auth/**", "/home/**", "/review/**", "/normal/users/reissue").permitAll() // 특정 경로 허용
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN") // 관리자 권한 필요
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )

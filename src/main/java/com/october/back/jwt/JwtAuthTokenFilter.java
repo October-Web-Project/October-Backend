@@ -29,75 +29,72 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        log.info(path);
+
+        // 요청 경로 로깅
+        log.info("Processing request for path: {}", path);
+
+        // 특정 경로는 필터링 제외
         if (path.contains("/swagger") || path.contains("/v3/api-docs")
                 || path.startsWith("/auth") || path.startsWith("/error")
-//                || path.startsWith("/normal/home") || path.startsWith("/property") || path.startsWith("/map")
-//                || path.startsWith("/review/list") || path.startsWith("/review/detail")
-//                || path.startsWith("/qna/list") || path.startsWith("/qna/detail") || path.startsWith("/qna/keyword")
-
-        ) {
+                || path.equals("/normal/users/auth/login")
+                || path.equals("/normal/users/reissue")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Access Token 추출
         String AT = jwtTokenProvider.resolveAT(request);
+        log.info("Access Token extracted: {}", AT);
+
         String RT = jwtTokenProvider.resolveRT(request);
-        JwtErrorCode errorCode;
 
         try {
-            // Access Token이 없고 Refresh Token만 있을 경우
-            if (AT == null && RT != null) {
-                if (path.contains("/refresh")) {
+            // `/reissue-token` 경로는 Refresh Token으로만 처리
+            if (path.equals("/normal/users/reissue")) {
+                if (RT != null && jwtTokenProvider.validateToken(RT)) {
                     filterChain.doFilter(request, response);
                     return;
-                }
-            } else if (jwtTokenProvider.validateToken(AT)) {
-                // Access Token 검증 성공 시
-                this.setAuthentication(AT);
-
-                // 추가: ROLE 검증
-                String userRole = jwtTokenProvider.extractUserRoleFromToken(AT); // JWT에서 역할 추출
-                if (path.startsWith("/admin") && !userRole.equals("ROLE_ADMIN")) {
-                    // 관리자가 아닌 사용자가 /admin 경로 요청 시
-                    setForbiddenResponse(response, "Admin role required");
-                    return;
-                }
-                if (path.startsWith("/user") && !userRole.equals("ROLE_USER") && !userRole.equals("ROLE_ADMIN")) {
-                    // /user 경로는 ROLE_USER 또는 ROLE_ADMIN만 접근 가능
-                    setForbiddenResponse(response, "User or Admin role required");
+                } else {
+                    log.warn("Invalid or missing Refresh Token for path: {}", path);
+                    setResponse(response, JwtErrorCode.JWT_COMPLEX_ERROR);
                     return;
                 }
             }
 
-        } catch (MalformedJwtException e) {
-            errorCode = JwtErrorCode.INVALID_JWT_TOKEN;
-            setResponse(response, errorCode);
-            return;
-        } catch (ExpiredJwtException e) {
-            errorCode = JwtErrorCode.JWT_TOKEN_EXPIRED;
-            setResponse(response, errorCode);
-            return;
-        } catch (UnsupportedJwtException e) {
-            errorCode = JwtErrorCode.UNSUPPORTED_JWT_TOKEN;
-            setResponse(response, errorCode);
-            return;
-        } catch (IllegalArgumentException e) {
-            errorCode = JwtErrorCode.EMPTY_JWT_CLAIMS;
-            setResponse(response, errorCode);
-            return;
-        } catch (SignatureException e) {
-            errorCode = JwtErrorCode.JWT_SIGNATURE_MISMATCH;
-            setResponse(response, errorCode);
-            return;
-        } catch (RuntimeException e) {
-            errorCode = JwtErrorCode.JWT_COMPLEX_ERROR;
-            setResponse(response, errorCode);
+            // 일반적인 Access Token 검증
+            if (AT != null && jwtTokenProvider.validateToken(AT)) {
+                log.info("Access Token validation successful for token: {}", AT);
+                this.setAuthentication(AT);
+
+                // ROLE 검증
+                String userRole = jwtTokenProvider.extractUserRoleFromToken(AT);
+                log.info("Extracted User Role: {}", userRole);
+
+                if (path.startsWith("/admin") && !userRole.equals("ROLE_ADMIN")) {
+                    log.warn("Access denied: Admin role required for path {}", path);
+                    setForbiddenResponse(response, "Admin role required");
+                    return;
+                }
+                if (path.startsWith("/users") && !userRole.equals("ROLE_USER") && !userRole.equals("ROLE_ADMIN")) {
+                    log.warn("Access denied: User or Admin role required for path {}", path);
+                    setForbiddenResponse(response, "User or Admin role required");
+                    return;
+                }
+            } else {
+                log.warn("Missing or invalid Access Token for path: {}", path);
+                setResponse(response, JwtErrorCode.JWT_COMPLEX_ERROR);
+                return;
+            }
+        } catch (Exception e) {
+            log.error("JWT validation failed: {}", e.getMessage());
+            setResponse(response, JwtErrorCode.JWT_COMPLEX_ERROR);
             return;
         }
 
+        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
+
 
     private void setAuthentication(String accessToken) {
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);

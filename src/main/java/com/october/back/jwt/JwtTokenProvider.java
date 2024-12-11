@@ -10,6 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -20,8 +22,13 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
+
     private final CustomUserDetailService customUserDetailService;
     private final UserRepo userRepo;
+
+
 
     @Value("${jwt.secretKey}")
     private String secretKey;
@@ -35,29 +42,31 @@ public class JwtTokenProvider {
     private long refreshTokenValidTime;
 
     public String resolveAT(HttpServletRequest request) {
-        if (request.getHeader("Authorization") != null )
-            return request.getHeader("Authorization").substring(7);
-        return null;
+        return request.getHeader("Authorization");
     }
 
     public String resolveRT(HttpServletRequest request) {
-        if (request.getHeader("refreshToken") != null )
-            return request.getHeader("refreshToken").substring(7);
-        return null;
+        String token = request.getHeader("refreshToken");
+        log.debug("Resolved Refresh Token: {}", token);
+        return request.getHeader("refreshToken");
     }
-    public boolean validateToken(String jwtToken) {
-        try {
-            Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-            Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(jwtToken);
 
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (JwtException e) {
-            throw new UnAuthorizedException("토큰 만료",ErrorCode.UNAUTHORIZED_EXCEPTION);
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                    .build()
+                    .parseClaimsJws(token);
+            log.debug("Token validation successful for token: {}", token);
+            return true;
+        } catch (Exception e) {
+            log.error("Token validation failed for token: {}. Error: {}", token, e.getMessage());
+            return false;
         }
     }
+
+
+
     public UsernamePasswordAuthenticationToken getAuthentication(String token) {
         Long userId = this.getUserId(token); // Long 타입으로 사용자 ID를 추출
         UserDetails userDetails = customUserDetailService.loadUserById(userId); // 사용자 ID로 조회
@@ -85,41 +94,114 @@ public class JwtTokenProvider {
         claimsBody.put("email", (String) claims.get("email"));
         return claimsBody;
     }
-    public String createAccessToken(String userId, String userRole, String nickName, String email) {
-        return this.createToken(userId, userRole, nickName, email, accessTokenValidTime);
+
+    public String createAccessToken(String userId, String userRole, String nickName, String email, String name) {
+        if (userId == null || userRole == null || nickName == null || email == null || name == null) {
+            throw new IllegalArgumentException("Invalid claims for JWT creation");
+        }
+
+        log.info("Generating Access Token: userId={}, userRole={}, nickName={}, email={}, name={}", userId, userRole, nickName, email, name);
+        return this.createToken(userId, userRole, nickName, email, name, accessTokenValidTime);
     }
-    // Refresh Token 생성.
-    public String createRefreshToken(String userId, String userRole, String nickName, String email) {
-        return this.createToken(userId, userRole, nickName, email, refreshTokenValidTime);
+
+
+//    public String createAccessToken(String userId, String userRole, String nickName, String email, String name) {
+//        if (userId == null || userRole == null || nickName == null || email == null || name == null) {
+//            throw new IllegalArgumentException("Invalid claims for JWT creation");
+//        }
+//        log.info("Generating Access Token: userId={}, userRole={}, nickName={}, email={}, name={}", userId, userRole, nickName, email, name);
+//        return this.createToken(userId, userRole, nickName, email, name, accessTokenValidTime);
+//    }
+
+    public String createRefreshToken(String userId, String userRole, String nickName, String email, String name) {
+        if (userId == null || userRole == null || nickName == null || email == null || name == null) {
+            throw new IllegalArgumentException("Invalid claims for JWT creation");
+        }
+        log.info("Generating Refresh Token: userId={}, userRole={}, nickName={}, email={}, name={}", userId, userRole, nickName, email, name);
+        return this.createToken(userId, userRole, nickName, email, name, refreshTokenValidTime);
     }
+
+//    public String createAccessToken(String userId, String userRole, String nickName, String email) {
+//        if (userId == null || userRole == null || nickName == null || email == null) {
+//            throw new IllegalArgumentException("Invalid claims for JWT creation");
+//        }
+//        log.info("Generating Access Token: userId={}, userRole={}, nickName={}, email={}", userId, userRole, nickName, email);
+//        return this.createToken(userId, userRole, nickName, email, accessTokenValidTime);
+//    }
+//
+//    public String createRefreshToken(String userId, String userRole, String nickName, String email) {
+//        if (userId == null || userRole == null || nickName == null || email == null) {
+//            throw new IllegalArgumentException("Invalid claims for JWT creation");
+//        }
+//        log.info("Generating Refresh Token: userId={}, userRole={}, nickName={}, email={}", userId, userRole, nickName, email);
+//        return this.createToken(userId, userRole, nickName, email, refreshTokenValidTime);
+//    }
 
     // Create token
-    private String createToken(String userId, String userRole, String nickName, String email, long validTime) {
+
+    private String createToken(String userId, String userRole, String nickName, String email, String name, long validity) {
+        Claims claims = Jwts.claims().setSubject(userId);
+        claims.put("role", userRole);
+        claims.put("nickName", nickName);
+        claims.put("email", email);
+        claims.put("name", name); // 추가
+
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validTime);
+        Date expiration = new Date(now.getTime() + validity);
 
         return Jwts.builder()
-                .setSubject(userId)
-                .claim("role", userRole)
-                .claim("nickName", nickName)
-                .claim("email", email)
+                .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(expiration)
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
 
 
-    public String extractUserRoleFromToken(String token){
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+//    private String createToken(String userId, String userRole, String nickName, String email, long validTime) {
+//        Date now = new Date();
+//        Date validity = new Date(now.getTime() + validTime);
+//
+//        return Jwts.builder()
+//                .setSubject(userId)
+//                .claim("role", userRole)
+//                .claim("nickName", nickName)
+//                .claim("email", email)
+//                .setIssuedAt(now)
+//                .setExpiration(validity)
+//                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
 
 
-        return (String) claims.get("role");
+    public String extractUserRoleFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            log.debug("Extracted Claims from Token: {}", claims);
+
+            String userRole = claims.get("role", String.class);
+            log.debug("Extracted userRole: {}", userRole);
+
+            if (userRole == null || userRole.isEmpty()) {
+                log.warn("No role found in token, defaulting to ROLE_USER");
+                return "ROLE_USER"; // 기본값 설정
+            }
+
+            return userRole;
+        } catch (ExpiredJwtException e) {
+            log.error("JWT token expired: {}", e.getMessage());
+            throw new RuntimeException("JWT token has expired");
+        } catch (Exception e) {
+            log.error("Error extracting user role from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid JWT token");
+        }
     }
+
 
 
     public String refreshAccessToken(String refreshToken) {
@@ -132,7 +214,7 @@ public class JwtTokenProvider {
 
         String userRole = extractUserRoleFromToken(refreshToken);
 
-        return this.createAccessToken(userEntity.getId().toString(), userRole, userEntity.getNickName(), userEntity.getEmail());
+        return this.createAccessToken(userEntity.getId().toString(), userRole, userEntity.getNickName(), userEntity.getEmail(), userEntity.getName());
     }
 
     //redis 사용 연계로 블랙리스트 구현
