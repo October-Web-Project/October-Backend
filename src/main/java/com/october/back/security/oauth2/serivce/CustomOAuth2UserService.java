@@ -1,6 +1,5 @@
 package com.october.back.security.oauth2.serivce;
 
-import com.october.back.security.oauth2.CustomOAuth2User;
 import com.october.back.security.oauth2.serivce.dto.KakaoResponseDto;
 import com.october.back.security.oauth2.serivce.dto.NaverResponseDto;
 import com.october.back.security.oauth2.serivce.dto.OAuth2ResponseDto;
