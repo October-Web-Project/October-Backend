@@ -1,17 +1,14 @@
 package com.october.back.user.service;
 
-import com.october.back.global.exception.UserException;
 import com.october.back.user.entity.UserRole;
 import com.october.back.user.entity.Users;
 import com.october.back.user.service.dto.UserRequestDto;
 import com.october.back.user.service.dto.UserResponseDto;
 import com.october.back.user.repository.UserRepository;
-import com.october.back.global.common.ErrorCode;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -28,4 +25,19 @@ public class UserService {
         Users savedUsers = userRepository.save(users);
         return savedUsers.getId();
     }
+
+    public UserResponseDto getUser(Long id) {
+        Optional<Users> users = userRepository.findById(id);
+
+        return users.get().convertResponseDto();
+    }
+
+    public Optional<Users> findByName(String name) {
+        return userRepository.findByName(name);
+    }
+    @Transactional
+    public void updateUser(Users user) {
+        userRepository.save(user);
+    }
+
 }
