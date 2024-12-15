@@ -1,5 +1,6 @@
 package com.october.back.config;
 
+import com.october.back.security.oauth2.CustomSuccessHandler;
 import com.october.back.security.oauth2.serivce.CustomOAuth2UserService;
 import com.october.back.util.jwt.JwtFilter;
 import com.october.back.util.jwt.JwtUtil;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -42,7 +44,10 @@ public class SecurityConfig {
         http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)));
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler)
+                );
+
 
 
         //경로별 인가 작업
