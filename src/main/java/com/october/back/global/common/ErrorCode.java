@@ -20,9 +20,10 @@ public enum ErrorCode {
 	NOT_FOUND_USER(404, "M001", "사용자를 찾을 수 없습니다."),
 
 	// media
-	NOT_FOUND_MEDIA(400, "M001", "미디어 URL을 찾을 수 없습니다.");
+	NOT_FOUND_MEDIA(400, "M001", "미디어 URL을 찾을 수 없습니다."),
 
 	// review
+	NOT_FOUND_REVIEW(400, "R001", "리뷰를 찾을 수 없습니다.");
 
 	private int status;
 	private final String code;
