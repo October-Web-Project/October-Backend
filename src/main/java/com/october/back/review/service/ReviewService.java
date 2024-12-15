@@ -7,7 +7,7 @@ import com.october.back.media.entity.Media;
 import com.october.back.media.service.MediaService;
 import com.october.back.review.entity.Review;
 import com.october.back.review.repository.ReviewRepository;
-import com.october.back.review.repository.UserRepository;
+import com.october.back.user.repository.UserRepository;
 import com.october.back.review.service.dto.ReviewServiceDto;
 import com.october.back.user.entity.User;
 import lombok.RequiredArgsConstructor;
