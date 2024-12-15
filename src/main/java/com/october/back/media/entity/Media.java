@@ -1,6 +1,7 @@
 package com.october.back.media.entity;
 
 import com.october.back.global.common.BaseEntity;
+import com.october.back.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AttributeOverride(name = "id", column = @Column(name = "media_id"))
 public class Media extends BaseEntity {
 
 	@Column(name = "clientUploadFileName", nullable = false)
@@ -18,13 +20,28 @@ public class Media extends BaseEntity {
 	@Column(name = "serverStoreUrl", nullable = false, unique = true)
 	private String serverStoredUrl;
 
-	@Enumerated(EnumType.STRING)
-	private MediaType mediaType;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "review_id")
+	private Review review;
 
 	@Builder
-	private Media(String clientUploadFileName, String serverStoredUrl, MediaType mediaType) {
+	private Media(String clientUploadFileName, String serverStoredUrl, Review review) {
 		this.clientUploadFileName = clientUploadFileName;
 		this.serverStoredUrl = serverStoredUrl;
-		this.mediaType = mediaType;
+		this.review = review;
+	}
+
+	@Builder
+	private Media(String clientUploadFileName, Review review) {
+		this.clientUploadFileName = clientUploadFileName;
+		this.review = review;
+	}
+
+	public void addReview(Review review) {
+
+		if (!review.getMediaList().contains(this)) {
+			this.review = review;
+			review.getMediaList().add(this);
+		}
 	}
 }
