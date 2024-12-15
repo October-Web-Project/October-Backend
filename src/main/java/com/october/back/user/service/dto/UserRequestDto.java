@@ -9,12 +9,12 @@ import lombok.Setter;
 public class UserRequestDto {
     private String name;
     private String email;
-    private String nickName;
+    private String nickname;
 
     @Builder
-    public UserRequestDto(String name, String email, String nickName) {
+    public UserRequestDto(String name, String email, String nickname) {
         this.name = name;
         this.email = email;
-        this.nickName = nickName;
+        this.nickname = nickname;
     }
 }

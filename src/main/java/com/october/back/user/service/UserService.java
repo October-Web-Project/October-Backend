@@ -23,7 +23,7 @@ public class UserService {
         Users users = new Users();
         users.setName(userRequestDto.getName());
         users.setEmail(userRequestDto.getEmail());
-        users.setNickName(userRequestDto.getNickName());
+        users.setNickname(userRequestDto.getNickname());
         users.setUserRole(UserRole.USER);
         Users savedUsers = userRepository.save(users);
         return savedUsers.getId();
