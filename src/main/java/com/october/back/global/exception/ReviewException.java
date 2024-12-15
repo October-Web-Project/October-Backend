@@ -1,8 +1,11 @@
 package com.october.back.global.exception;
 
-public class ReviewException extends RuntimeException {
+import com.october.back.global.common.BusinessException;
+import com.october.back.global.common.ErrorCode;
 
-	public ReviewException(String message) {
-		super(message);
+public class ReviewException extends BusinessException {
+
+	public ReviewException(ErrorCode errorCode) {
+		super(errorCode);
 	}
 }
