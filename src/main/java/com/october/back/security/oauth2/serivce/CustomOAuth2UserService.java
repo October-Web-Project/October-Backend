@@ -3,9 +3,12 @@ package com.october.back.security.oauth2.serivce;
 import com.october.back.security.oauth2.serivce.dto.KakaoResponseDto;
 import com.october.back.security.oauth2.serivce.dto.NaverResponseDto;
 import com.october.back.security.oauth2.serivce.dto.OAuth2ResponseDto;
+import com.october.back.user.entity.UserRole;
+import com.october.back.user.entity.Users;
 import com.october.back.user.entity.dto.UserDto;
 import com.october.back.user.service.UserService;
 import com.october.back.user.service.dto.UserRequestDto;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -36,21 +39,32 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
-
-        UserDto user = UserDto.builder()
-                .name(username)
-                .email(oAuth2Response.getEmail())
-                .nickname(oAuth2Response.getNickname())
-                .build();
-
+        Optional<Users> existUser = userService.findByName(username);
+        if (!existUser.isPresent()) {
+            return createNewUser(oAuth2Response, username);
+        }
+        return updateExistingUser(existUser.get(), oAuth2Response);
+    }
+    private OAuth2User createNewUser(OAuth2ResponseDto oAuth2Response, String username) {
         UserRequestDto userRequestDto = UserRequestDto.builder()
                 .name(username)
-                .nickName(oAuth2Response.getNickname())
+                .nickname(oAuth2Response.getNickname())
                 .email(oAuth2Response.getEmail())
                 .build();
 
         userService.createUser(userRequestDto);
 
-        return new CustomOAuth2User(user);
+        UserDto userDto = new UserDto(username, userRequestDto.getEmail(), userRequestDto.getNickname(), UserRole.USER);
+        return new CustomOAuth2User(userDto);
+    }
+
+    private OAuth2User updateExistingUser(Users existUser, OAuth2ResponseDto oAuth2Response) {
+        existUser.setEmail(oAuth2Response.getEmail());
+        existUser.setNickname(oAuth2Response.getNickname());
+
+        userService.updateUser(existUser);
+
+        UserDto userDto = new UserDto(existUser.getName(), existUser.getEmail(), existUser.getNickname(), existUser.getUserRole());
+        return new CustomOAuth2User(userDto);
     }
 }
