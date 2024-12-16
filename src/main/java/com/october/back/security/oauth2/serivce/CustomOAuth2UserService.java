@@ -54,17 +54,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         userService.createUser(userRequestDto);
 
-        UserDto userDto = new UserDto(username, userRequestDto.getEmail(), userRequestDto.getNickname(), UserRole.USER);
+        UserDto userDto = UserDto.builder()
+                .name(username)
+                .email(userRequestDto.getEmail())
+                .nickname(userRequestDto.getNickname())
+                .role(UserRole.USER)
+                .build();
         return new CustomOAuth2User(userDto);
     }
 
     private OAuth2User updateExistingUser(Users existUser, OAuth2ResponseDto oAuth2Response) {
-        existUser.setEmail(oAuth2Response.getEmail());
-        existUser.setNickname(oAuth2Response.getNickname());
-
+        existUser.updateEmail(oAuth2Response.getEmail());
+        existUser.updateNickname(oAuth2Response.getNickname());
         userService.updateUser(existUser);
 
-        UserDto userDto = new UserDto(existUser.getName(), existUser.getEmail(), existUser.getNickname(), existUser.getUserRole());
+        UserDto userDto = UserDto.builder()
+                .name(existUser.getName())
+                .email(existUser.getEmail())
+                .nickname(existUser.getNickname())
+                .role(existUser.getUserRole())
+                .build();
         return new CustomOAuth2User(userDto);
     }
 }
