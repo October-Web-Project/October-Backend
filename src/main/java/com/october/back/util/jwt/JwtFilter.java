@@ -1,5 +1,7 @@
 package com.october.back.util.jwt;
 
+import com.october.back.global.common.ErrorCode;
+import com.october.back.global.exception.JwtException;
 import com.october.back.security.oauth2.serivce.CustomOAuth2User;
 import com.october.back.user.entity.UserRole;
 import com.october.back.user.entity.dto.UserDto;
@@ -22,7 +24,6 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     public JwtFilter(JwtUtil jwtUtil) {
-
         this.jwtUtil = jwtUtil;
     }
 
@@ -41,48 +42,48 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         log.info("Jwt 검증을 시작합니다. URI: {}", requestUri);
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("Authorization")) {
-                authorization = cookie.getValue();
+
+        // Authorization 쿠키 추출
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("Authorization")) {
+                    authorization = cookie.getValue();
+                }
             }
         }
-        //Authorization 헤더 검증
+
+        // Authorization 헤더가 없으면 예외 처리
         if (authorization == null) {
-            log.error("token null");
-            filterChain.doFilter(request, response);
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+            throw new JwtException("토큰이 비어 있습니다.", ErrorCode.EMPTY_TOKEN);
         }
 
-        //토큰
         String token = authorization;
 
+        // 토큰 만료 검증
         if (jwtUtil.isExpired(token)) {
-
-            log.error("token expired");
-            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+            throw new JwtException("토큰이 만료되었습니다.", ErrorCode.EXPIRED_TOKEN);
         }
-        log.info("token이 유효합니다.");
-        //토큰에서 username과 role 획득
+
+        log.info("토큰이 유효합니다.");
+
+        // 토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
-        //userDTO를 생성하여 값 set
+        // userDTO를 생성하여 값 set
         UserDto user = UserDto.builder()
                 .name(username)
                 .role(UserRole.valueOf(role))
                 .build();
 
-        //UserDetails에 회원 정보 객체 담기
+        // UserDetails에 회원 정보 객체 담기
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(user);
 
-        //스프링 시큐리티 인증 토큰 생성
+        // 스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null,
                 customOAuth2User.getAuthorities());
-        //세션에 사용자 등록
+
+        // 세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
