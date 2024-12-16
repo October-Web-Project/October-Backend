@@ -123,7 +123,7 @@ public class MediaService {
 	 * 파일의 전체 경로를 생성
 	 * @return 파일의 전체 경로
 	 */
-	private String createPath(String fileName) {
+	public String createPath(String fileName) {
 		String fileId = createFileId();
 		return String.format("IMAGE/%s", fileId + "_" + fileName);
 	}

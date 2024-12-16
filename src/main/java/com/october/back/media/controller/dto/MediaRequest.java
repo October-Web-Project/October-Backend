@@ -16,7 +16,7 @@ public class MediaRequest {
 
 	public MediaServiceDto toMediaServiceDto() {
 		return MediaServiceDto.builder()
-                .fileName(fileName)
-                .build();
+				.fileName(fileName)
+				.build();
 	}
 }
