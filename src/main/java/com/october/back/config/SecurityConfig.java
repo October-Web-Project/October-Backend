@@ -35,6 +35,7 @@ public class SecurityConfig {
         //HTTP Basic 인증 방식 disable
         http
                 .httpBasic((auth) -> auth.disable());
+
         //JWTFilter 추가
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
@@ -61,6 +62,16 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // 로그아웃 설정
+        http
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        // todo : 프론트 주소 맞춰서 바꿔야 함.
+                        .logoutSuccessUrl("http://localhost:8080/")
+                        .invalidateHttpSession(true) // 세션 무효화
+                        .clearAuthentication(true) // 인증 정보 삭제
+                        .deleteCookies("JSESSIONID", "Authorization")
+                );
         return http.build();
     }
 }
