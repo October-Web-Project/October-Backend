@@ -29,7 +29,7 @@ public class Users extends BaseEntity {
     private Boolean isActive = true; // 기본값: 활성 상태
 
     @Builder
-    public Users(String name, String nickname, String email, UserRole userRole) {
+    private Users(String name, String nickname, String email, UserRole userRole) {
         this.name = name;
         this.nickname = nickname;
         this.email = email;
