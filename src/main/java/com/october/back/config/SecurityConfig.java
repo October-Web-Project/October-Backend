@@ -1,5 +1,6 @@
 package com.october.back.config;
 
+import com.october.back.security.oauth2.CustomAuthenticationFailureHandler;
 import com.october.back.security.oauth2.CustomSuccessHandler;
 import com.october.back.security.oauth2.serivce.CustomOAuth2UserService;
 import com.october.back.util.jwt.JwtFilter;
@@ -15,7 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +25,7 @@ import java.util.Collections;
 @Configuration
 public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomSuccessHandler customSuccessHandler;
     private final JwtUtil jwtUtil;
 
@@ -48,7 +49,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)).successHandler(customSuccessHandler))  // OAuth2 로그인 설정
+                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)).successHandler(customSuccessHandler).failureHandler(customAuthenticationFailureHandler))  // OAuth2 로그인 설정
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/").permitAll().anyRequest().authenticated())  // 경로별 접근 권한 설정
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션 설정 (Stateless)
                 .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("http://localhost:8080/").invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID", "Authorization"))  // 로그아웃 설정
