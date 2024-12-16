@@ -4,11 +4,11 @@ import com.october.back.global.common.BusinessException;
 import com.october.back.global.common.ErrorCode;
 
 public class JwtException extends BusinessException {
-    protected JwtException(ErrorCode errorCode) {
+    public JwtException(ErrorCode errorCode) {
         super(errorCode);
     }
 
-    protected JwtException(String message, ErrorCode errorCode) {
+    public JwtException(String message, ErrorCode errorCode) {
         super(message, errorCode);
     }
 }
