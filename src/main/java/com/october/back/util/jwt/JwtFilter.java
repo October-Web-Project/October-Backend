@@ -41,6 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 requestUri.matches("^\\/favicon.ico$") ||
                 requestUri.matches("^\\/firebase(?:\\/.*)?$") ||
                 requestUri.matches("^\\/ws(?:\\/.*)?$") ||
+                requestUri.matches("^\\/js(?:\\/.*)?$") ||
                 requestUri.matches("^\\/swagger-ui(?:\\/.*)?$") || // Swagger UI
                 requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$")) { // Swagger API Docs
 
