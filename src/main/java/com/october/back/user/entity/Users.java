@@ -35,15 +35,4 @@ public class Users extends BaseEntity {
         this.email = email;
         this.userRole = userRole;
     }
-
-    public UserResponseDto convertResponseDto() {
-        return UserResponseDto.builder()
-                .id(this.getId())
-                .name(this.name)
-                .email(this.email)
-                .nickname(this.nickname)
-                .userRole(this.userRole)
-                .isActive(this.isActive)
-                .build();
-    }
 }
