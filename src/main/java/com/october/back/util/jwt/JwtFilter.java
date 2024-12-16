@@ -35,8 +35,16 @@ public class JwtFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String requestUri = request.getRequestURI();
 
-        // 특정 URL 제외 처리
-        if (requestUri.matches("^\\/login(?:\\/.*)?$") || requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
+        // 인증이 필요 없는 경로 리스트
+        if (requestUri.matches("^\\/login(?:\\/.*)?$") ||
+                requestUri.matches("^\\/oauth2(?:\\/.*)?$") ||
+                requestUri.matches("^\\/favicon.ico$") ||
+                requestUri.matches("^\\/firebase(?:\\/.*)?$") ||
+                requestUri.matches("^\\/ws(?:\\/.*)?$") ||
+                requestUri.matches("^\\/swagger-ui(?:\\/.*)?$") || // Swagger UI
+                requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$")) { // Swagger API Docs
+
+            log.info("인증이 필요 없는 경로, URI: {}", requestUri);
             filterChain.doFilter(request, response);
             return;
         }
