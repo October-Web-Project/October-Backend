@@ -24,6 +24,7 @@ public enum ErrorCode {
 	NOT_FOUND_MEDIA(400, "M001", "미디어 URL을 찾을 수 없습니다."),
 
 	// review
+	NOT_FOUND_REVIEW(400, "R001", "리뷰를 찾을 수 없습니다.");
 
 	// jwt
 	INVALID_TOKEN(401, "J001", "유효하지 않은 토큰입니다."),

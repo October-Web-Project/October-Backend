@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.*;
 import com.october.back.media.controller.dto.PreSignedUploadInitRequest;
 import com.october.back.media.entity.Media;
-import com.october.back.media.entity.MediaType;
 import com.october.back.media.repository.MediaRepository;
 import com.october.back.media.service.dto.FinishUploadServiceDto;
 import com.october.back.media.service.dto.MediaServiceDto;
@@ -35,40 +34,38 @@ public class MediaService {
 	 * @param request
 	 * @return
 	 */
-	public InitiateMultipartUploadResult initiateMultipartUploadResult(MediaType mediaType, PreSignedUploadInitRequest request) {
+	public InitiateMultipartUploadResult initiateMultipartUploadResult(PreSignedUploadInitRequest request) {
 		ObjectMetadata objectMetadata = new ObjectMetadata();
 		objectMetadata.setContentLength(request.getFileSize());
 		objectMetadata.setContentType(URLConnection.guessContentTypeFromName(request.getOriginalFileName()));
 
 		return amazonS3.initiateMultipartUpload(
-				new InitiateMultipartUploadRequest(bucket, createPath(mediaType, request.getOriginalFileName()), objectMetadata)
+				new InitiateMultipartUploadRequest(bucket, createPath(request.getOriginalFileName()), objectMetadata)
 		);
 	}
 
 
 	/**
-	 * @param mediaType
 	 * @param dto
 	 * @return
 	 */
-	public String getPreSignedUrl(MediaType mediaType, MediaServiceDto dto) {
-		String path = createPath(mediaType, dto.getFileName());
+	public String getPreSignedUrl(MediaServiceDto dto) {
+		String path = createPath(dto.getFileName());
 		GeneratePresignedUrlRequest generatePreSignedUrlRequest = getGeneratePreSignedUrlRequest(bucket, path);
 		URL url = amazonS3.generatePresignedUrl(generatePreSignedUrlRequest);
 		return url.toString();
 	}
 
 	/**
-	 * @param mediaType
 	 * @param dto
 	 * @return
 	 */
-	public CompleteMultipartUploadResult uploadComplete(MediaType mediaType, FinishUploadServiceDto dto) {
+	public CompleteMultipartUploadResult uploadComplete(FinishUploadServiceDto dto) {
 		List<PartETag> partETagList = dto.getParts().stream()
 				.map(part -> new PartETag(part.getPartNumber(), part.getETag()))
 				.collect(Collectors.toList());
 
-		String path = createPath(mediaType, dto.getFileName());
+		String path = createPath(dto.getFileName());
 
 		CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest(
 				bucket,
@@ -78,7 +75,6 @@ public class MediaService {
 		);
 
 		Media media = Media.builder()
-				.mediaType(mediaType)
 				.clientUploadFileName(dto.getFileName())
 				.serverStoredUrl(path)
 				.build();
@@ -125,11 +121,10 @@ public class MediaService {
 
 	/**
 	 * 파일의 전체 경로를 생성
-	 * @param mediaType 미디어 타입
 	 * @return 파일의 전체 경로
 	 */
-	private String createPath(MediaType mediaType, String fileName) {
+	public String createPath(String fileName) {
 		String fileId = createFileId();
-		return String.format("%s/%s", mediaType, fileId + "_" + fileName);
+		return String.format("IMAGE/%s", fileId + "_" + fileName);
 	}
 }
