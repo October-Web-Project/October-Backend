@@ -7,9 +7,9 @@ import com.october.back.media.entity.Media;
 import com.october.back.media.service.MediaService;
 import com.october.back.review.entity.Review;
 import com.october.back.review.repository.ReviewRepository;
+import com.october.back.user.entity.Users;
 import com.october.back.user.repository.UserRepository;
 import com.october.back.review.service.dto.ReviewServiceDto;
-import com.october.back.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ public class ReviewService {
 
 	@Transactional
 	public Review createReview(ReviewServiceDto request) {
-		User user = userRepository.findById(request.getUserId())
+		Users user = userRepository.findById(request.getUserId())
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
 		Review review = request.toEntity(user);

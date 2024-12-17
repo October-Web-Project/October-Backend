@@ -2,7 +2,7 @@ package com.october.back.review.entity;
 
 import com.october.back.global.common.BaseEntity;
 import com.october.back.media.entity.Media;
-import com.october.back.user.entity.User;
+import com.october.back.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,13 +34,13 @@ public class Review extends BaseEntity {
 	private Integer views;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private User user;
+	private Users user;
 
 	@OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Media> mediaList = new ArrayList<>();
 
 	@Builder
-	private Review(String title, String content, Double rating, Integer views, User user) {
+	private Review(String title, String content, Double rating, Integer views, Users user) {
 		this.title = title;
 		this.content = content;
 		this.rating = rating;

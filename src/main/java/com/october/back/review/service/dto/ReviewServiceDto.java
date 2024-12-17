@@ -2,7 +2,7 @@ package com.october.back.review.service.dto;
 
 import com.october.back.media.entity.Media;
 import com.october.back.review.entity.Review;
-import com.october.back.user.entity.User;
+import com.october.back.user.entity.Users;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,7 +34,7 @@ public class ReviewServiceDto {
 		this.userId = userId;
 		this.mediaFileNames = mediaFileNames;
 	}
-	public Review toEntity(User user) {
+	public Review toEntity(Users user) {
 		return Review.builder()
 				.title(this.title)
 				.content(this.content)
