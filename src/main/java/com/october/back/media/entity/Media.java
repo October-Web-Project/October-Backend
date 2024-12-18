@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "MEDIA")
-@AttributeOverride(name = "id", column = @Column(name = "media_id"))
 public class Media extends BaseEntity {
 
 	@Column(name = "clientUploadFileName", nullable = false)
