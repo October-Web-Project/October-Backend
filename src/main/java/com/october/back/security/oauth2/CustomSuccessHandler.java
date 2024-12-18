@@ -1,6 +1,6 @@
 package com.october.back.security.oauth2;
 
-import com.october.back.security.oauth2.serivce.CustomOAuth2User;
+import com.october.back.security.oauth2.service.CustomOAuth2User;
 import com.october.back.util.jwt.JwtUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

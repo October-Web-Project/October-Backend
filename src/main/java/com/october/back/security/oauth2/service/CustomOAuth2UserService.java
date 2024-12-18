@@ -1,8 +1,8 @@
-package com.october.back.security.oauth2.serivce;
+package com.october.back.security.oauth2.service;
 
-import com.october.back.security.oauth2.serivce.dto.KakaoResponseDto;
-import com.october.back.security.oauth2.serivce.dto.NaverResponseDto;
-import com.october.back.security.oauth2.serivce.dto.OAuth2ResponseDto;
+import com.october.back.security.oauth2.service.dto.KakaoResponseDto;
+import com.october.back.security.oauth2.service.dto.NaverResponseDto;
+import com.october.back.security.oauth2.service.dto.OAuth2ResponseDto;
 import com.october.back.user.entity.UserRole;
 import com.october.back.user.entity.Users;
 import com.october.back.user.entity.dto.UserDto;

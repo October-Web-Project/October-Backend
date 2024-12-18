@@ -2,7 +2,7 @@ package com.october.back.config;
 
 import com.october.back.security.oauth2.CustomAuthenticationFailureHandler;
 import com.october.back.security.oauth2.CustomSuccessHandler;
-import com.october.back.security.oauth2.serivce.CustomOAuth2UserService;
+import com.october.back.security.oauth2.service.CustomOAuth2UserService;
 import com.october.back.util.jwt.JwtFilter;
 import com.october.back.util.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;

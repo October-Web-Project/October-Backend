@@ -2,7 +2,7 @@ package com.october.back.util.jwt;
 
 import com.october.back.global.common.ErrorCode;
 import com.october.back.global.exception.JwtException;
-import com.october.back.security.oauth2.serivce.CustomOAuth2User;
+import com.october.back.security.oauth2.service.CustomOAuth2User;
 import com.october.back.user.entity.UserRole;
 import com.october.back.user.entity.dto.UserDto;
 import jakarta.servlet.FilterChain;
