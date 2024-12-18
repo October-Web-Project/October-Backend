@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "MEDIA")
 @AttributeOverride(name = "id", column = @Column(name = "media_id"))
 public class Media extends BaseEntity {
 
