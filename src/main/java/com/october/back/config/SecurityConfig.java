@@ -49,10 +49,22 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)).successHandler(customSuccessHandler).failureHandler(customAuthenticationFailureHandler))  // OAuth2 로그인 설정
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/").permitAll().anyRequest().authenticated())  // 경로별 접근 권한 설정
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션 설정 (Stateless)
-                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("http://localhost:8080/").invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID", "Authorization"))  // 로그아웃 설정
+                .oauth2Login(
+                        oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                                .successHandler(customSuccessHandler)
+                                .failureHandler(customAuthenticationFailureHandler))  // OAuth2 로그인 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
+                        .permitAll() // 정적 리소스 접근 허용
+                        .requestMatchers("/", "/api/main", "s/login/**", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**")
+                        .permitAll() // 인증 없이 접근할 수 있는 URL들
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션 설정 (Stateless)
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/api/main")
+                        .invalidateHttpSession(true).clearAuthentication(true)
+                        .deleteCookies("JSESSIONID", "Authorization"))  // 로그아웃 설정
                 .build();
     }
 }
