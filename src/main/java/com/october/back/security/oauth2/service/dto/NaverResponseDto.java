@@ -1,4 +1,4 @@
-package com.october.back.security.oauth2.serivce.dto;
+package com.october.back.security.oauth2.service.dto;
 
 import java.util.Map;
 

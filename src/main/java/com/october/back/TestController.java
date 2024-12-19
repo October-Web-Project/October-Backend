@@ -12,4 +12,9 @@ public class TestController {
 	public String test() {
 		return "무중단 배포 테스트 컨트롤러";
 	}
+
+	@GetMapping("/main")
+	public String main() {
+		return "Main!";
+	}
 }

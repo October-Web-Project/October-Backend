@@ -2,7 +2,7 @@ package com.october.back.util.jwt;
 
 import com.october.back.global.common.ErrorCode;
 import com.october.back.global.exception.JwtException;
-import com.october.back.security.oauth2.serivce.CustomOAuth2User;
+import com.october.back.security.oauth2.service.CustomOAuth2User;
 import com.october.back.user.entity.UserRole;
 import com.october.back.user.entity.dto.UserDto;
 import jakarta.servlet.FilterChain;
@@ -20,7 +20,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 public class JwtFilter extends OncePerRequestFilter {
-    private final Logger log = LoggerFactory.getLogger(JwtFilter.class);
     private final JwtUtil jwtUtil;
 
     public JwtFilter(JwtUtil jwtUtil) {
@@ -39,18 +38,17 @@ public class JwtFilter extends OncePerRequestFilter {
         if (requestUri.matches("^\\/login(?:\\/.*)?$") ||
                 requestUri.matches("^\\/oauth2(?:\\/.*)?$") ||
                 requestUri.matches("^\\/favicon.ico$") ||
-                requestUri.matches("^\\/firebase(?:\\/.*)?$") ||
+                requestUri.matches("^\\/firebase(?:\\/.*)?$") || // 이 부분에서 firebase 아래 모든 경로가 포함됩니다.
+                requestUri.matches("^\\/firebase-messaging-sw.js$") || // 명시적으로 추가 (만약 독립적인 파일로 처리하고자 할 경우)
                 requestUri.matches("^\\/ws(?:\\/.*)?$") ||
                 requestUri.matches("^\\/js(?:\\/.*)?$") ||
                 requestUri.matches("^\\/swagger-ui(?:\\/.*)?$") || // Swagger UI
-                requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$")) { // Swagger API Docs
+                requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$") ||
+                requestUri.matches("^\\/api\\/test(?:\\/.*)?$")) { // Swagger API Docs
 
-            log.info("인증이 필요 없는 경로, URI: {}", requestUri);
             filterChain.doFilter(request, response);
             return;
         }
-
-        log.info("Jwt 검증을 시작합니다. URI: {}", requestUri);
 
         // Authorization 쿠키 추출
         if (cookies != null) {
@@ -72,8 +70,6 @@ public class JwtFilter extends OncePerRequestFilter {
         if (jwtUtil.isExpired(token)) {
             throw new JwtException("토큰이 만료되었습니다.", ErrorCode.EXPIRED_TOKEN);
         }
-
-        log.info("토큰이 유효합니다.");
 
         // 토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);

@@ -1,4 +1,4 @@
-package com.october.back.security.oauth2.serivce;
+package com.october.back.security.oauth2.service;
 
 import com.october.back.user.entity.dto.UserDto;
 import org.springframework.security.core.GrantedAuthority;
