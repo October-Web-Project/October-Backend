@@ -40,7 +40,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
         Optional<Users> existUser = userService.findByName(username);
-        if (!existUser.isPresent()) {
+        if (existUser.isEmpty()) {
             return createNewUser(oAuth2Response, username);
         }
         return updateExistingUser(existUser.get(), oAuth2Response);
