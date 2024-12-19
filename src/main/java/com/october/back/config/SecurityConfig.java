@@ -56,13 +56,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**")
                         .permitAll() // 정적 리소스 접근 허용
-                        .requestMatchers("/", "/api/main", "s/login/**", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**")
+                        .requestMatchers("/", "/api/main", "/api/test", "/login/**", "/oauth2/**", "/swagger-ui/**", "/v3/api-docs/**")
                         .permitAll() // 인증 없이 접근할 수 있는 URL들
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션 설정 (Stateless)
-                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/api/main")
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/api/test")
                         .invalidateHttpSession(true).clearAuthentication(true)
                         .deleteCookies("JSESSIONID", "Authorization"))  // 로그아웃 설정
                 .build();

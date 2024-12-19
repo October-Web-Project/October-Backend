@@ -43,7 +43,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 requestUri.matches("^\\/ws(?:\\/.*)?$") ||
                 requestUri.matches("^\\/js(?:\\/.*)?$") ||
                 requestUri.matches("^\\/swagger-ui(?:\\/.*)?$") || // Swagger UI
-                requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$")) { // Swagger API Docs
+                requestUri.matches("^\\/v3\\/api-docs(?:\\/.*)?$") ||
+                requestUri.matches("^\\/api\\/test(?:\\/.*)?$")) { // Swagger API Docs
 
             filterChain.doFilter(request, response);
             return;
