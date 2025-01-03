@@ -46,4 +46,8 @@ public class CustomOAuth2User implements OAuth2User {
         return userDto.getName();
     }
 
+    public UserDto getUserDto() {
+        return this.userDto;
+    }
+
 }
